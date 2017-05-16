@@ -9,21 +9,49 @@ t1 = datetime.datetime.now()
 
 
 if cert=="y" or cert=="Y":
-	r = requests.get("https://"+ask, verify=False)
+	pre = "https://"
+	url = "https://"+ask
+	r = requests.get(url, verify=False)
 else:
-	r = requests.get("http://"+ask, verify=False)
+	pre = "http://"
+	url = "http://"+ask
+	r = requests.get(url, verify=False)
+
 data  = r.text
+
 
 soup = BeautifulSoup(data,"lxml")
 count = 0
-links = [link for link in soup.find_all('a', href=True)]
-for link in links:
-	print link.get('href')
-	count += 1
+visited = 0
+links = []
+traverse(soup,url)
+def crawl(link):
+	r = requests.get(link, verify=False)
+	data = r.text
+	soup = BeautifulSoup(data, "lxml")
+	
+
+def add_links(link):
+	if link.startswith("https://") or link.startswith("http://"):
+		#do something 
+	else:
+		links.append(pre+link)
+
+
+def traverse(soup,url):
+	links = [link for link in soup.find_all('a', href=True)]
+	for link in links:
+		print "Crawling link : %s " % link.get('href')
+		add_links(link)
+		count += 1
+
+
+
 t2 = datetime.datetime.now()	
 total_time = t2-t1
 print "--------------------------------------------------------------"
 print "STATSITCS "
 print "=============================================================="	
-print "Total links found: %d" % count	
+print "Total links found: %d" % count
+print "Total links visited by crawlers : %d " % visited	
 print "Total time taken: %s" % total_time
