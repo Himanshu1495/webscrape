@@ -2,6 +2,30 @@ from bs4 import BeautifulSoup
 
 import requests
 import datetime
+
+def traverse(links):
+	if len(links) != 0:
+		for link in links:
+			visiting_link = link.get('href')
+			if visiting_link.startswith("https://") or visiting_link.startswith("http://"):
+				print "Crawling link : %s " % visiting_link
+				crawl(visiting_link,links)
+				count += 1
+			else:
+				visiting_link = url + visiting_link
+				print "Crawling link : %s " % visiting_link
+				crawl(link,links)
+				count += 1	
+
+def crawl(link,links):
+	r = requests.get(link, verify=False)
+	data = r.text
+	soup = BeautifulSoup(data, "lxml")
+	new_links = [new_find for new_find in soup.find_all('a', href=True)]
+	links = links + new_links
+	links.remove(link)
+	
+
 ask = raw_input("Enter the URL: ")
 cert = raw_input("Does it have a SSL certificate ?(y/n) ")
 
@@ -23,29 +47,8 @@ data  = r.text
 soup = BeautifulSoup(data,"lxml")
 count = 0
 visited = 0
-links = []
-traverse(soup,url)
-def crawl(link):
-	r = requests.get(link, verify=False)
-	data = r.text
-	soup = BeautifulSoup(data, "lxml")
-	
-
-def add_links(link):
-	if link.startswith("https://") or link.startswith("http://"):
-		#do something 
-	else:
-		links.append(pre+link)
-
-
-def traverse(soup,url):
-	links = [link for link in soup.find_all('a', href=True)]
-	for link in links:
-		print "Crawling link : %s " % link.get('href')
-		add_links(link)
-		count += 1
-
-
+links = [link for link in soup.find_all('a', href=True)]
+traverse(links)
 
 t2 = datetime.datetime.now()	
 total_time = t2-t1
