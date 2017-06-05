@@ -3,27 +3,28 @@ from bs4 import BeautifulSoup
 import requests
 import datetime
 
-def traverse(links):
+def traverse(links,already_crawled,count):
 	if len(links) != 0:
 		for link in links:
-			visiting_link = link.get('href')
-			if visiting_link.startswith("https://") or visiting_link.startswith("http://"):
-				print "Crawling link : %s " % visiting_link
-				crawl(visiting_link,links)
-				count += 1
-			else:
-				visiting_link = url + visiting_link
-				print "Crawling link : %s " % visiting_link
-				crawl(link,links)
-				count += 1	
+			if link not in already_crawled:
+				visiting_link = link.get('href')
+				if visiting_link.startswith("https://") or visiting_link.startswith("http://"):
+					print "Crawling link : %s " % visiting_link
+					crawl(visiting_link,links)
+					count += 1
+				else:
+					visiting_link = url + visiting_link
+					print "Crawling link : %s " % visiting_link
+					crawl(link,links)
+					count += 1	
 
 def crawl(link,links):
+	already_crawled.append(link)
 	r = requests.get(link, verify=False)
 	data = r.text
 	soup = BeautifulSoup(data, "lxml")
 	new_links = [new_find for new_find in soup.find_all('a', href=True)]
 	links = links + new_links
-	links.remove(link)
 	
 
 ask = raw_input("Enter the URL: ")
@@ -47,8 +48,9 @@ data  = r.text
 soup = BeautifulSoup(data,"lxml")
 count = 0
 visited = 0
+already_crawled = []
 links = [link for link in soup.find_all('a', href=True)]
-traverse(links)
+traverse(links,already_crawled,count)
 
 t2 = datetime.datetime.now()	
 total_time = t2-t1
