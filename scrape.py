@@ -14,23 +14,26 @@ def traverse(links,already_crawled,count):
 				if visiting_link.startswith("https://") or visiting_link.startswith("http://"):
 					print "Crawling link : %s " % visiting_link
 					#crawl link
-					crawl(visiting_link,links)
 					count += 1
+					crawl(visiting_link,links)					
 				else:
 					#if link does not have http:// or https://, prefix it before crawling
 					visiting_link = url + visiting_link
 					print "Crawling link : %s " % visiting_link
-					crawl(link,links)
-					count += 1	
+					count += 1
+					crawl(link,links)	
 
 def crawl(link,links):
-	already_crawled.append(link)
-	r = requests.get(link, verify=False)
-	data = r.text
-	soup = BeautifulSoup(data, "lxml")
-	new_links = [new_find for new_find in soup.find_all('a', href=True)]
-	#add new found links to previous links list 
-	links = links + new_links
+	try:
+		r = requests.get(link, verify=True)
+		data = r.text
+		soup = BeautifulSoup(data, "lxml")
+		already_crawled.append(link)
+		new_links = [new_find for new_find in soup.find_all('a', href=True)]
+		#add new found links to previous links list 
+		links = links + new_links
+	except:
+		not_crawled.append(link)
 	
 #ask for url
 ask = raw_input("Enter the URL: ")
@@ -63,6 +66,8 @@ visited = 0
 #initialise already visited
 already_crawled = []
 #get all links of the page 
+#initialise not visited
+not_crawled = []
 links = [link for link in soup.find_all('a', href=True)]
 #call traverse function
 traverse(links,already_crawled,count)
@@ -74,6 +79,7 @@ total_time = t2-t1
 print "--------------------------------------------------------------"
 print "STATSITCS "
 print "=============================================================="	
-print "Total links found: %d" % count
-print "Total links visited by crawlers : %d " % visited	
-print "Total time taken: %s" % total_time
+print "Total links found: %d" % len(links)
+print "Total links visited by crawlers : %d " % len(already_crawled)	
+print "Total links not visited by crawlers : %d" % len(not_crawled)
+print "Total time taken : %s" % total_time
