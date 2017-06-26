@@ -5,7 +5,7 @@ import urllib2
 import datetime
 import re
 
-def traverse(links,already_crawled,count):
+def traverse(links,already_crawled):
 	#check if links are present
 	if len(links) != 0:
 		for link in links:
@@ -16,15 +16,17 @@ def traverse(links,already_crawled,count):
 				if visiting_link.startswith("https://") or visiting_link.startswith("http://"):
 					print "Crawling link : %s " % visiting_link
 					#crawl link
-					crawl(visiting_link,links)					
+					crawl(visiting_link,links,already_crawled)					
 				else:
 					#if link does not have http:// or https://, prefix it before crawling
 					visiting_link = url + visiting_link
 					print "Crawling link : %s " % visiting_link
 					#crawl link
-					crawl(link,links)	
+					crawl(link,links,already_crawled)
+			else:
+				pass	
 
-def crawl(link,links):
+def crawl(link,links,already_crawled):
 	try:
 		r = urllib2.urlopen(link)
 		soup = BeautifulSoup(r, 'html.parser')
@@ -32,6 +34,7 @@ def crawl(link,links):
 		new_links = [new_find for new_find in soup.findAll('a', attrs = {'href': re.compile("^"+pre)})]
 		#add new found links to previous links list 
 		links = links + new_links
+		traverse(links,already_crawled)
 	except:
 		not_crawled.append(link)
 	
@@ -59,7 +62,7 @@ soup = BeautifulSoup(r,'html.parser')
 
 
 #initialise count
-count = 0
+#count = 0
 #initialise visited
 visited = 0
 #initialise already visited
@@ -69,7 +72,7 @@ already_crawled = []
 not_crawled = []
 links = [link.get('href') for link in soup.findAll('a', attrs = {'href': re.compile("^"+pre)})]
 #call traverse function
-traverse(links,already_crawled,count)
+traverse(links,already_crawled)
 
 #get the clock time at end
 t2 = datetime.datetime.now()
@@ -81,6 +84,6 @@ print "=============================================================="
 print "Total links found: %d" % len(links)
 print "Total links visited by crawlers : %d " % len(already_crawled)	
 print "Total links not visited by crawlers : %d" % len(not_crawled)
-for l in not_crawled:
-	print l
+#for l in not_crawled:
+#	print l
 print "Total time taken : %s" % total_time
